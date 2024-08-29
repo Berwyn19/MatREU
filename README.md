@@ -22,3 +22,20 @@
 + If you are only interested to retrieve the values for the evaluation metrics like forces or energies RMSE, run `mlp calc-errors pot.mtp db.cfg`, where `pot.mtp` is the model file (`Trained.mtp_` by default if you did not specify where to save to model when executing the training command) and `db.cfg` is the test dataset
 + If you are interested in visualizing the prediction, then you might want to generate predictions in a form of `.cfg` file by running `mlp calc-efs pot.mtp in.cfg out.cfg`, where `in.cfg` is the test dataset and `out.cfg` is the `.cfg` file to save the predictions in.
 + To extract the forces from `out.cfg`, you can use `get_forces.py` which will return a nested list of forces with dimension `number_of_configurations x number_of_atoms_per_configuration x 3`. To run this script, first open `get_forces.py` and specify a path to a `json` file for storing the list
+
+# Ultra Fast Interpretable Machine Learning Potentials (UF2/UF3)
+## Intralayer Training
++ An example of intralayer training for `UF23` is shown under the `scripts` directory inside `train-intralayer.py`. Some important things to note here:
+    + For intralayer, the default code is aimed to model two-body and three-body interactions of the system. This is specified by the `degree=3`
+    + You will need to specify the cutoff radius for both the two-body interactions and three-body interactions for every pair or triplet of atoms. This is done by the `r_max_map` variable
+    + If you want to, you can use `run.py` to run three-fold cross validations two determine which combination of `r_max2b` and `r_max3b` performs the best, although the result from the three-fold cross validation might not be the best combination in the actual training.
+    + `resolution_map` corresponds to how many B-spline basis to use per interactions. Increasing this number would result in a more accurate model
+    + On line 51 and 97, I created a `txt` file specifying which index needs to go into the training and test dataset. Because we already had a split dataset for both training and test, the `txt` files basically contain a number from `0` to `number_of_configurations - 1`
+    + These `txt` files would come into handy if you have not split the dataset and wanted to use random indices to split the single dataset into training and test. The example under `examples/tungsten_extxyz` in `pair_potential_demo.ipynb` could be a useful resource on how to do this.
+    + On line 111 and 114, I dumped the predicted and actual forces into a json file, feel free to change the names of the file to save the forces
+ 
+## Interlayer Training
++ An example of interlayer training for `UF23` is shown under the `scripts` directory inside `train-interlayer.py`. Some important things to note here:
+  + For interlayer, the default code is aimed to model only two-body interactions of the system. This is specified by the `degree=2`. You can also definitely perform three-body interactions by doing the same thing as the intralayer training
+  + For interlayer training, first is to relabel the file so that two identical atoms from different layers are labeled differently. To do this, you can run `relabel_file.py`. Before running the script, make sure to change `atomic_numbers` and `file_name`. `atomic_numbers` is a list which specify how you would label the atoms for each configuration. In my example, I relabeled the `Mo` and `S` atoms on the other layer to `W` and `Se`.
+  + To support interlayer training, make sure to set the cutoff radius of atoms from the same layer to zero inside the `r_max_map`. With this, the model will ignore any intralayer interactions
