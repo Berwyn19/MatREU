@@ -1,0 +1,135 @@
+# general
+root: results/change_num_layers
+run_name: inter_final_plot_1
+seed: 123456
+dataset_seed: 123456
+append: true
+default_dtype: float64
+
+# -- network --
+model_builders:
+ - allegro.model.Allegro
+ # the typical model builders from `nequip` can still be used:
+ - PerSpeciesRescale
+ - ForceOutput
+ - RescaleEnergyEtc
+
+# cutoffs
+r_max: 7.0
+avg_num_neighbors: auto
+
+# radial basis
+BesselBasis_trainable: true
+PolynomialCutoff_p: 6   
+
+# symmetry
+l_max: 2
+parity: o3_full   
+
+# Allegro layers:
+num_layers: 3
+env_embed_multiplicity: 8
+embed_initial_edge: true
+
+two_body_latent_mlp_latent_dimensions: [32, 64, 128]
+two_body_latent_mlp_nonlinearity: silu
+two_body_latent_mlp_initialization: uniform
+
+latent_mlp_latent_dimensions: [128]
+latent_mlp_nonlinearity: silu
+latent_mlp_initialization: uniform
+latent_resnet: true
+
+env_embed_mlp_latent_dimensions: []
+env_embed_mlp_nonlinearity: null
+env_embed_mlp_initialization: uniform
+
+# - end allegro layers -
+
+# Final MLP to go from Allegro latent space to edge energies:
+edge_eng_mlp_latent_dimensions: [32]
+edge_eng_mlp_nonlinearity: null
+edge_eng_mlp_initialization: uniform
+
+# -- data --
+dataset: ase                                                                   
+dataset_file_name: ./inter_dataset.xyz                    # path to data set file
+ase_args:
+  format: extxyz
+include_keys: ["atom_types"]
+
+validation_dataset: ase
+validation_dataset_file_name: inter_dataset.xyz
+
+# For Interlayer
+type_names:  ["Mo1L2","S1L2","S2L2", "Mo1L1", "S1L1", "S2L1"]
+
+# For Intralayer
+# type_names:  ["Mo1L2","S1L2","S2L2"]
+
+# Only for Interlayer
+edge_eng_sum_per_edge_species_scale: [[0., 0., 0., 1., 1., 1.],
+[0., 0., 0., 1., 1., 1.],
+[0., 0., 0., 1., 1., 1.],
+[1., 1., 1., 0., 0., 0.],
+[1., 1., 1., 0., 0., 0.],
+[1., 1., 1., 0., 0., 0.]
+]
+
+# logging
+wandb: true
+wandb_project: allegro-tutorial
+verbose: info
+log_batch_freq: 10
+
+# training
+n_train: 972
+n_val: 3240
+batch_size: 10
+max_epochs: 50
+learning_rate: 0.002
+metrics_key: validation_loss
+
+# use an exponential moving average of the weights
+use_ema: true
+ema_decay: 0.99
+ema_use_num_updates: true
+
+# loss function
+loss_coeffs:
+  forces: 1.
+  total_energy:
+    - 1.
+    - PerAtomMSELoss
+
+# optimizer
+optimizer_name: Adam
+optimizer_amsgrad: true
+
+metrics_components:
+  - - forces                               # key 
+    - mae                                  # "rmse" or "mae"
+  - - forces
+    - rmse
+  - - total_energy
+    - rmse
+  - - total_energy
+    - mae
+    - PerAtom: True                        # if true, energy is normalized by the number of atoms
+
+# lr scheduler, drop lr if no improvement for 50 epochs
+# lr_scheduler_name: ReduceLROnPlateau
+# lr_scheduler_patience: 100
+# lr_scheduler_factor: 0.5
+
+lr_scheduler_name: CosineAnnealingWarmRestarts
+lr_scheduler_T_0: 10000
+lr_scheduler_T_mult: 2
+lr_scheduler_eta_min: 0
+lr_scheduler_last_epoch: -1
+
+early_stopping_lower_bounds:
+  LR: 1.0e-5
+
+early_stopping_patiences:
+  validation_loss: 100

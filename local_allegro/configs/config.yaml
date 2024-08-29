@@ -1,0 +1,113 @@
+BesselBasis_trainable: true
+PolynomialCutoff_p: 6
+append: true
+ase_args:
+  format: extxyz
+avg_num_neighbors: auto
+batch_size: 50
+dataset: ase
+dataset_file_name: ./inter_training.xyz
+dataset_seed: 123456
+default_dtype: float64
+early_stopping_lower_bounds:
+  LR: 1.0e-05
+early_stopping_patiences:
+  validation_loss: 100
+edge_eng_mlp_initialization: uniform
+edge_eng_mlp_latent_dimensions: [32]
+edge_eng_mlp_nonlinearity: null
+ema_decay: 0.99
+ema_use_num_updates: true
+embed_initial_edge: true
+env_embed_mlp_initialization: uniform
+env_embed_mlp_latent_dimensions: []
+env_embed_mlp_nonlinearity: null
+env_embed_multiplicity: 8
+include_keys:
+- atom_types
+l_max: 2
+latent_mlp_initialization: uniform
+latent_mlp_latent_dimensions:
+- 128
+
+# edge_eng_sum_per_edge_species_scale: [[0., 0., 0., 1., 1., 1.],
+# [0., 0., 0., 1., 1., 1.],
+# [0., 0., 0., 1., 1., 1.],
+# [1., 1., 1., 0., 0., 0.],
+# [1., 1., 1., 0., 0., 0.],
+# [1., 1., 1., 0., 0., 0.]
+# ]
+latent_mlp_nonlinearity: silu
+latent_resnet: true
+learning_rate: 0.002
+log_batch_freq: 10
+loss_coeffs:
+  forces: 1.0
+  total_energy:
+  - 1.0
+  - PerAtomMSELoss
+lr_scheduler_T_0: 10000
+lr_scheduler_T_mult: 2
+lr_scheduler_eta_min: 0
+lr_scheduler_last_epoch: -1
+lr_scheduler_name: CosineAnnealingWarmRestarts
+# lr_scheduler_name: ReduceLROnPlateau
+# lr_scheduler_patience: 20
+# lr_scheduler_factor: 0.5
+max_epochs: 50
+metrics_components:
+- - forces
+  - mae
+- - forces
+  - rmse
+- - total_energy
+  - mae
+- - total_energy
+  - rmse
+- - total_energy
+  - mae
+  - PerAtom: true
+metrics_key: validation_loss
+model_builders:
+- allegro.model.Allegro
+- PerSpeciesRescale
+- ForceOutput
+- RescaleEnergyEtc
+num_layers: 3
+optimizer_amsgrad: true
+optimizer_name: Adam
+parity: o3_full
+n_train: 3456
+n_val: 432
+r_max: 7.0
+root: results/change_num_layers
+run_name: exp4
+seed: 123456
+shuffle: true
+train_val_split: random
+two_body_latent_mlp_initialization: uniform
+two_body_latent_mlp_latent_dimensions:
+- 32
+- 64
+- 128
+two_body_latent_mlp_nonlinearity: silu
+type_names:
+- Mo1L2
+- S1L2
+- S2L2
+- Mo1L1
+- S1L1
+- S2L1
+# edge_eng_sum_per_edge_species_scale: [[0., 0., 0., 1., 1., 1.],
+# [0., 0., 0., 1., 1., 1.],
+# [0., 0., 0., 1., 1., 1.],
+# [1., 1., 1., 0., 0., 0.],
+# [1., 1., 1., 0., 0., 0.],
+# [1., 1., 1., 0., 0., 0.]
+# ]
+use_ema: true
+validation_dataset: ase
+validation_dataset_file_name: ./intra_dataset.xyz
+verbose: info
+wandb: true
+wandb_project: change_num_epochs_allegro
