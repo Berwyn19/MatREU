@@ -1,4 +1,6 @@
 # MatREU
+# Machine Learning Interatomic Potentials
+The stacking of 2D van der Waals materials, such as transition metal dichalcogenides (TMDs), with lattice mismatches or twist angles has garnered significant interest due to emergent physical properties in these moiré materials. Given the two distinct scales of interaction in these structures, we train separate models for intralayer and interlayer interactions. While previous studies have employed complex neural networks like ALLEGRO and MACE to fit DFT data accurately by capturing the complex interactions in crystalline solids, using more interpretable models for the interlayer interactions can prevent overfitting and hallucinations by these complex models. This work assesses these interpretable models, aiming to achieve comparable performance to ALLEGRO and MACE. We find that the moment tensor potential (MTP) model can be used as a more interpretable replacement for the interlayer model.
 
 # Moment Tensor Potentials
 ## Training Moment Tensor Potentials
